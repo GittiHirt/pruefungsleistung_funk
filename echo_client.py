@@ -5,6 +5,7 @@ client_socket = socket.socket()
 LOCALHOST = '192.168.178.104'
 PORT = 4242
 
+#Test
 try:
     host = sys.argv[1]  # server IP given on command line
 except IndexError:
