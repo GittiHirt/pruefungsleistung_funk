@@ -6,6 +6,8 @@ from threading import Thread
 PORT = 4242
 message_dict = {}
 
+#Test von Simon 
+
 def get_my_ip():
     """Return the ipaddress of the local host
 
