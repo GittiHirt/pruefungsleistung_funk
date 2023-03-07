@@ -6,8 +6,6 @@ from threading import Thread
 PORT = 4242
 message_dict = {}
 
-#Test
-
 def get_my_ip():
     """Return the ipaddress of the local host
 
@@ -22,9 +20,12 @@ def threaded_client(connection, address):
     connection.send(str.encode("Please send username"))
     data = connection.recv(2048)
     username = data.decode()
-    message_dict[username] = []  # initialize empty list for user
-    message = data.decode()
-    print(f"{username} at {address[0]}:{address[1]}")
+    if username in message_dict.keys:
+        connection.send(str.encode(f"ERROR: The username '{username}' is already used"))
+    else:
+        message_dict[username] = []  # initialize empty list for user
+        message = data.decode()
+        print(f"{username} at {address[0]}:{address[1]}")
 
     # Send registration confirmation
     connection.send(str.encode(f"Registered as {username}"))

@@ -1,3 +1,4 @@
+from pickle import TRUE
 import socket
 import sys
 
@@ -5,7 +6,6 @@ client_socket = socket.socket()
 LOCALHOST = '192.168.178.104'
 PORT = 4242
 
-#Test
 try:
     host = sys.argv[1]  # server IP given on command line
 except IndexError:
@@ -32,8 +32,14 @@ username = input("Username: ")
 client_socket.send(str.encode(username))
 
 # Wait for registration confirmation
-response = client_socket.recv(2048)
-print(f"{response.decode()}")
+while TRUE:
+    response = client_socket.recv(2048)
+    if response.decode().startswith('ERROR'):
+        print(f"{response.decode()}")
+        continue
+    else:
+        print(f"{response.decode()}")
+        break
 
 # Do the talk
 while True:
