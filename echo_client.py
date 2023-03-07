@@ -25,12 +25,10 @@ except socket.error as e:
 response = client_socket.recv(2048)
 print(f"{response.decode()}")
 
-# Send username
-response = client_socket.recv(2048)
-print(f"{response.decode()}")
-
 # Wait for registration confirmation
 while True:
+    response = client_socket.recv(2048)
+    print(f"{response.decode()}")
     username = input("Username: ")
     client_socket.send(str.encode(username))
     response = client_socket.recv(2048)
@@ -63,18 +61,28 @@ while True:
 
     elif msg == "2":
         print("Checking incoming Messages...")
+        print("Your messages:")
         client_socket.send(str.encode(msg))
         num_messages = client_socket.recv(2048).decode()
         print(f"You have {num_messages} new message(s).")
-        for i in range(int(num_messages)):
-            incoming_msg = client_socket.recv(2048).decode()
-            print(f"{incoming_msg} \n")
+        incomming_messages = client_socket.recv(2048).decode()
+        for message in incomming_messages.split("~"):
+            print(str(message))
 
-    #elif msg == "3":
+    elif msg == "3":
+        print("Checking list of online clients...")
+        print("Online Clients:")
+        client_socket.send(str.encode(msg))
+        online_clients = client_socket.recv(2048).decode()
+        for clients in online_clients.split("~"):
+            print(str(clients))
 
-
-    #elif msg == "4":
+    elif msg == "4":
+        print("Checking old Messages...")
         print("Old messages:")
+        old_messages = client_socket.recv(2048).decode()
+        for message in old_messages.split("~"):
+            print(str(message))
 
     else:
         print("Listening ...")

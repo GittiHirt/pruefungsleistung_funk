@@ -3,8 +3,11 @@ import sys
 import platform
 from threading import Thread
 
+import time
+
 PORT = 4242
 message_dict = {}
+message_dict_archiv = {}
 
 def get_my_ip():
     """Return the ipaddress of the local host
@@ -15,7 +18,7 @@ def get_my_ip():
     """
     return socket.gethostbyname(socket.gethostname())
 
-
+# recieve username and check it
 def threaded_client(connection, address):
     while True:
         connection.send(str.encode("Please send username"))
@@ -25,7 +28,8 @@ def threaded_client(connection, address):
             connection.send(str.encode(f"ERROR: The username '{username}' is already used"))
             continue
         break
-    message_dict[username] = []  # initialize empty list for user
+    message_dict[username] = []
+    message_dict_archiv[username] = []
     message = data.decode()
     print(f"{username} at {address[0]}:{address[1]}")
 
@@ -49,15 +53,21 @@ def threaded_client(connection, address):
 
         elif message == '2':  # client requests incoming messages
             incoming_messages = message_dict[username]
-            connection.send(str.encode(str(len(incoming_messages))))  # send number of messages
+            connection.send(str.encode(str(len(list(incoming_messages)))))  # send number of messages
+            time.sleep(0.5)
+            connection.send(str.encode('~'.join(list(incoming_messages))))
+            #for msg in incoming_messages:
+                #connection.send(str.encode(msg))
+            #del message_dict[username]
+            message_dict_archiv[recipient].append(f"{username}: {message_dict.pop(username)}") #vielleicht durchitereieren hier
+            message_dict[username] = []
 
-            for msg in incoming_messages:
-                connection.send(str.encode(msg))
-            message_dict[username] = []  # clear the list of incoming messages
+        elif message == '3':
+            connection.send(str.encode('~'.join(list(message_dict.keys()))))
 
-        #elif message == '3':
-
-
+        elif message == '4':
+            old_messages = message_dict_archiv[username]
+            connection.send(str.encode('~'.join(list(old_messages)))) # nochmal ran
 
         elif "stop" in message.lower():
             break
