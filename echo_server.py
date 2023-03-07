@@ -20,12 +20,13 @@ def threaded_client(connection, address):
     connection.send(str.encode("Please send username"))
     data = connection.recv(2048)
     username = data.decode()
-    if username in message_dict.keys:
-        connection.send(str.encode(f"ERROR: The username '{username}' is already used"))
-    else:
-        message_dict[username] = []  # initialize empty list for user
-        message = data.decode()
-        print(f"{username} at {address[0]}:{address[1]}")
+    for name in message_dict.keys():
+        if str(username) == str(name):
+            connection.send(str.encode(f"ERROR: The username '{username}' is already used"))
+
+    message_dict[username] = []  # initialize empty list for user
+    message = data.decode()
+    print(f"{username} at {address[0]}:{address[1]}")
 
     # Send registration confirmation
     connection.send(str.encode(f"Registered as {username}"))

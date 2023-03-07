@@ -32,7 +32,7 @@ username = input("Username: ")
 client_socket.send(str.encode(username))
 
 # Wait for registration confirmation
-while TRUE:
+while True:
     response = client_socket.recv(2048)
     if response.decode().startswith('ERROR'):
         print(f"{response.decode()}")
