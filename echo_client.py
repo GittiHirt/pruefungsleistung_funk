@@ -64,7 +64,11 @@ while True:
             incoming_msg = client_socket.recv(2048).decode()
             print(f"{incoming_msg} \n")
 
-    elif msg == "3":
+    #elif msg == "3":
+
+
+    #elif msg == "4":
+        print("Old messages:")
 
     else:
         print("Listening ...")

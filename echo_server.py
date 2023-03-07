@@ -52,8 +52,8 @@ def threaded_client(connection, address):
                 connection.send(str.encode(msg))
             message_dict[username] = []  # clear the list of incoming messages
 
-        elif message == '3':
-            print(username)
+        #elif message == '3':
+
 
 
         elif "stop" in message.lower():
