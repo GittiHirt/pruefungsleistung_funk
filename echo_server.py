@@ -17,13 +17,14 @@ def get_my_ip():
 
 
 def threaded_client(connection, address):
-    connection.send(str.encode("Please send username"))
-    data = connection.recv(2048)
-    username = data.decode()
-    for name in message_dict.keys():
-        if str(username) == str(name):
+    while True:
+        connection.send(str.encode("Please send username"))
+        data = connection.recv(2048)
+        username = data.decode()
+        if username in list(message_dict.keys()):
             connection.send(str.encode(f"ERROR: The username '{username}' is already used"))
-
+            continue
+        break
     message_dict[username] = []  # initialize empty list for user
     message = data.decode()
     print(f"{username} at {address[0]}:{address[1]}")

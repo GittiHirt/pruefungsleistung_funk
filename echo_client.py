@@ -3,7 +3,7 @@ import socket
 import sys
 
 client_socket = socket.socket()
-LOCALHOST = '192.168.178.104'
+LOCALHOST = '192.168.2.121'
 PORT = 4242
 
 try:
@@ -28,11 +28,11 @@ print(f"{response.decode()}")
 # Send username
 response = client_socket.recv(2048)
 print(f"{response.decode()}")
-username = input("Username: ")
-client_socket.send(str.encode(username))
 
 # Wait for registration confirmation
 while True:
+    username = input("Username: ")
+    client_socket.send(str.encode(username))
     response = client_socket.recv(2048)
     if response.decode().startswith('ERROR'):
         print(f"{response.decode()}")
