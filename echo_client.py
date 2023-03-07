@@ -62,6 +62,9 @@ while True:
         for i in range(int(num_messages)):
             incoming_msg = client_socket.recv(2048).decode()
             print(f"{incoming_msg} \n")
+
+    elif msg == "3":
+
     else:
         print("Listening ...")
         # Echo from Server

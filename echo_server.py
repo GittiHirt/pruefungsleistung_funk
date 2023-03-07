@@ -41,6 +41,8 @@ def threaded_client(connection, address):
             if recipient in message_dict:
                 message_dict[recipient].append(f"{username}: {message}")
             print(message_dict)
+            print(username)
+            print(message_dict)
 
         elif message == '2':  # client requests incoming messages
             incoming_messages = message_dict[username]
@@ -49,6 +51,10 @@ def threaded_client(connection, address):
             for msg in incoming_messages:
                 connection.send(str.encode(msg))
             message_dict[username] = []  # clear the list of incoming messages
+
+        elif message == '3':
+            print(username)
+
 
         elif "stop" in message.lower():
             break
