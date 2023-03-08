@@ -3,7 +3,7 @@ import socket
 import sys
 
 client_socket = socket.socket()
-LOCALHOST = '192.168.2.121'
+LOCALHOST = '10.11.21.85'
 PORT = 4242
 
 try:
@@ -87,9 +87,9 @@ while True:
     else:
         print("Listening ...")
         # Echo from Server
-        response = client_socket.recv(2048)
-        return_msg = response.decode()
-        print(return_msg)
+        response = client_socket.recv(2048).decode()
+        print(response)
 
 print("Closing connection")
+
 client_socket.close()

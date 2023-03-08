@@ -4,6 +4,7 @@ import platform
 from threading import Thread
 
 import time
+from unittest import expectedFailure
 
 PORT = 4242
 message_dict = {}
@@ -37,56 +38,48 @@ def threaded_client(connection, address):
     connection.send(str.encode(f"Registered as {username}"))
 
     while True:
-        print(f"Listening for {address[0]}:{address[1]} ...")
-        data = connection.recv(2048)
-        message = data.decode()
-        if message == '1':
-            # Receive recipient and message from client
-            data = connection.recv(2048).decode()
-            recipient, message = data.split(" ", 1)
-            # Add message to recipient's message list
-            if recipient in message_dict:
-                message_dict[recipient].append(f"{username}: {message}")
-            print(message_dict)
-            print(username)
-            print(message_dict)
-
-        elif message == '2':  # client requests incoming messages
-            incoming_messages = message_dict[username]
-            connection.send(str.encode(str(len(list(incoming_messages)))))  # send number of messages
-            time.sleep(0.5)
-            connection.send(str.encode('~'.join(list(incoming_messages))))
-            #for msg in incoming_messages:
-                #connection.send(str.encode(msg))
-            #del message_dict[username]
-            message_dict_archiv[recipient].append(f"{username}: {message_dict.pop(username)}") #vielleicht durchitereieren hier
-            message_dict[username] = []
-
-        elif message == '3':
-            connection.send(str.encode('~'.join(list(message_dict.keys()))))
-
-        elif message == '4':
-            old_messages = message_dict_archiv[username]
-            connection.send(str.encode('~'.join(list(old_messages)))) # nochmal ran
-
-        elif "stop" in message.lower():
-            break
-        else:  # assume it's a regular message
-            reply = f"Echo to {username}: {message}"
-            connection.send(str.encode(reply))
-            # add message to recipient's message list
-            if message.startswith("@"):  # direct message
-                recipient = message.split()[0][1:]
+        try:
+            print(f"Listening for {address[0]}:{address[1]} ...")
+            data = connection.recv(2048)
+            message = data.decode()
+            if message == '1':
+                # Receive recipient and message from client
+                data = connection.recv(2048).decode()
+                recipient, message = data.split(" ", 1)
+                # Add message to recipient's message list
                 if recipient in message_dict:
                     message_dict[recipient].append(f"{username}: {message}")
-            else:  # broadcast message
-                for recipient in message_dict:
-                    if recipient != username:
-                        message_dict[recipient].append(f"{username}: {message}")
 
-    print(f"Closing connection to {address[0]}:{address[1]}")
-    del message_dict[username]
-    connection.close()
+            elif message == '2':  # client requests incoming messages
+                incoming_messages = message_dict[username]
+                connection.send(str.encode(str(len(list(incoming_messages)))))  # send number of messages
+                time.sleep(0.5)
+                connection.send(str.encode('~'.join(list(incoming_messages))))
+                for message in message_dict[username]:
+                    message_dict_archiv[username].append(message)
+                message_dict[username] = []
+
+            elif message == '3':
+                connection.send(str.encode('~'.join(list(message_dict.keys()))))
+
+            elif message == '4':
+                old_messages = message_dict_archiv[username]
+                if old_messages != []:
+                    connection.send(str.encode('~'.join(list(old_messages))))
+
+            elif "stop" in message.lower():
+                print(f"Closing connection to {address[0]}:{address[1]}")
+                del message_dict[username]
+
+                break
+
+            else:  # assume it's a regular message
+                reply = f"Echo to {username}: {message}"
+                connection.send(str.encode(reply))
+        except WindowsError as e:
+            if e.winerror == 10054:
+                print(f"Closing connection to {address[0]}:{address[1]}")
+                del message_dict[username]
 
 
 if __name__ == "__main__":
@@ -104,6 +97,11 @@ if __name__ == "__main__":
         server_socket.settimeout(1)
     # Start socket
     server_socket.listen()
+
+
+    # Hier müssen wir die Counter noch reduzieren wenn eine Connection geschlossen wird!
+    # Die Deregistrierung muss vielleicht auch hier vorgenommen werden.
+    # Thread schließen oder so :D
 
     print("===== Start Chat Server =====")
     print(f"Starting Server on {get_my_ip()}:{PORT}")
