@@ -7,14 +7,14 @@ import queue
 import threading
 
 client_socket = socket.socket()
-LOCALHOST = '192.168.178.104' #10.11.21.58 #192.168.178.104
+LOCALHOST = str(socket.gethostbyname(socket.gethostname()))
 PORT = 4242
 
 try:
     while True:
-        request = input(f"Wollen Sie ein spezielle IP eingeben? Ja/Nein \nEingabe:").lower()
+        request = input(f"Wollen Sie ein IP-Adresse für die Serververbindung eingeben? Ja/Nein \nEingabe:").lower()
         if request == "ja":
-            LOCALHOST = input("Enter Server-IP:")
+            LOCALHOST = input("Eingabe Server-IP:")
             host = sys.argv[1]
 
         elif request == "nein":
@@ -25,13 +25,13 @@ except IndexError:
     host = LOCALHOST
     #print(f"No server given on command line. Trying {host}")
 try:
-    print(f"Waiting for connection to {host}")
+    print(f"Warte auf Verbindung mit dem Host: {host}")
     client_socket.connect((host, PORT))
 except socket.error as e:
     print(str(e))
     if host == LOCALHOST:
-        print("Running locally on Debian based system? "
-              "Then you may try 127.0.1.1 for connecting to server")
+        print("Läuft der Server lokal auf einem Debian-System "
+              "Dann versuchen Sie die IP-Adresse 127.0.1.1 für die Verbindung zum Server")
     sys.exit(1)
 
 try:
@@ -55,7 +55,7 @@ try:
     while True:
         response = client_socket.recv(2048).decode()
         print(f"{response}")
-        username = input("Username: ")
+        username = input("Benutzername: ")
         client_socket.send(str.encode(username))
         response = client_socket.recv(2048).decode()
         if response.startswith('ERROR'):
@@ -73,12 +73,12 @@ try:
     # Do the talk
     while True:
         time.sleep(0.1)
-        print("====== Minimal Chat System ======")
-        print("1: Send message")
-        print("2: Check incoming messages")
-        print("3: List online clients")
-        print("4: Quit")
-        msg = input("Your Selection: ")
+        print("====== Minimalistisches Chat-System ======")
+        print("1: Nachricht senden")
+        print("2: Nachrichten abrufen")
+        print("3: Liste der Online-Benutzer")
+        print("4: Beenden")
+        msg = input("Ihre Auswahl: ")
 
         if not msg:  # empty message not permitted in TCP
             continue
@@ -87,16 +87,16 @@ try:
             break
 
         elif msg == "1":
-            recipient = input("Send message to: ")
-            message = input("Your message: ")
+            recipient = input("Nachricht an den Benutzer: ")
+            message = input("Dein Nachricht: ")
             if len(message) > 126:
-                print("The input of recipient exceeds the maximum length of 126!")
+                print("Ihre Nachricht darf nicht länger als 126 Zeichen sein!")
                 continue
             client_socket.send(str.encode(f"{recipient} {message}"))
 
         elif msg == "2":
-            print("Checking incoming Messages...")
-            print("Your messages:")
+            print("Empfange Nachrichten...")
+            print("Nachrichten an Sie:")
             #client_socket.send(str.encode(msg))
             unique_messages = set()
             incomming_messages = response_queue.get()
@@ -104,13 +104,13 @@ try:
                 for message in incomming_messages.split("~"):
                     print(str(message))
             else:
-                print("Test")
+                print("Es sind keine Nachrichten für Sie verfügbar.")
                 continue
 
 
         elif msg == "3":
-            print("Checking list of online clients...")
-            print("Online Clients:")
+            print("Empfange Liste der Online-Benutzer...")
+            print("Online-Benutzer:")
             client_socket.send(str.encode(msg))
             unique_messages = set()
             messages = response_queue.get()
@@ -119,17 +119,17 @@ try:
                 print(clients)
 
         elif msg == "4":
-            print("Checking old Messages...")
+            print("Empfange verbleibende Nachrichten...")
             unique_messages = set()
             incomming_messages = response_queue.get()
             if incomming_messages != ['']:
                 for message in incomming_messages.split("~"):
                     print(str(message))
             else:
-                print("Test")
+                print("Es sind keine Nachrichten für Sie verfügbar.")
                 continue
-            print("Closing down Session actor")
-            print("Goodbye")
+            print("Beende Verbindung zum Server...")
+            print("Auf Wiedersehen!")
             time.sleep(4.0)
             client_socket.send(str.encode(msg))
             receiving = False
@@ -138,11 +138,11 @@ try:
             break
 
         else:
-            print("Listening ...")
+            print("Falsche Eingabe")
 
 
-    print("Closing connection")
+    print("Verbindung beendet!")
 
 except KeyboardInterrupt as ki:
-    print("\nStopping server due to user request")
+    print("\nAnhalten des Servers durch Benutzereingabe!")
 

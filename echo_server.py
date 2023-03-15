@@ -22,23 +22,23 @@ def get_my_ip():
 
 # recieve username and check it
 def threaded_client(connection, address):
-    while True:
-        connection.send(str.encode("Please send username"))
-        data = connection.recv(2048)
-        username = data.decode()
-        if username in list(message_dict.keys()):
-            connection.send(str.encode(f"ERROR: The username '{username}' is already used!"))
-            continue
-        break
-    message_dict[username] = []
-    message = data.decode()
-    print(f"{username} at {address[0]}:{address[1]}")
+    try:
+        while True:
+            connection.send(str.encode("Please send username"))
+            data = connection.recv(2048)
+            username = data.decode()
+            if username in list(message_dict.keys()):
+                connection.send(str.encode(f"ERROR: The username '{username}' is already used!"))
+                continue
+            break
+        message_dict[username] = []
+        message = data.decode()
+        print(f"{username} at {address[0]}:{address[1]}")
 
-    # Send registration confirmation
-    connection.send(str.encode(f"Registered as {username} successfully!"))
+        # Send registration confirmation
+        connection.send(str.encode(f"Registered as {username} successfully!"))
 
-    while True:
-        try:
+        while True:
             print(f"Listening for {address[0]}:{address[1]} ...")
             data = connection.recv(2048)
             message = data.decode()
@@ -90,12 +90,11 @@ def threaded_client(connection, address):
                 break
 
             else:  # assume it's a regular message
-                reply = f"Echo to {username}: {message}"
-                connection.send(str.encode(reply))
-        except WindowsError as e:
-            if e.winerror == 10054:
-                print(f"Closing connection to {address[0]}:{address[1]}")
-                del message_dict[username]
+                print('Wrong Input from Client')
+    except WindowsError as e:
+        if e.winerror == 10054:
+            print(f"Closing connection to {address[0]}:{address[1]}")
+            del message_dict[username]
 
 
 if __name__ == "__main__":
