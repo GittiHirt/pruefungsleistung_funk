@@ -10,6 +10,7 @@ PORT = 4242
 message_dict = {}
 message_dict_archiv = {}
 
+
 def get_my_ip():
     """Return the ipaddress of the local host
 
@@ -19,6 +20,7 @@ def get_my_ip():
     """
     return socket.gethostbyname(socket.gethostname())
 
+
 # recieve username and check it
 def threaded_client(connection, address):
     while True:
@@ -26,7 +28,7 @@ def threaded_client(connection, address):
         data = connection.recv(2048)
         username = data.decode()
         if username in list(message_dict.keys()):
-            connection.send(str.encode(f"ERROR: The username '{username}' is already used"))
+            connection.send(str.encode(f"ERROR: The username '{username}' is already used!"))
             continue
         break
     message_dict[username] = []
@@ -35,7 +37,7 @@ def threaded_client(connection, address):
     print(f"{username} at {address[0]}:{address[1]}")
 
     # Send registration confirmation
-    connection.send(str.encode(f"Registered as {username}"))
+    connection.send(str.encode(f"Registered as {username} successfully!"))
 
     while True:
         try:
@@ -50,22 +52,35 @@ def threaded_client(connection, address):
                 if recipient in message_dict:
                     message_dict[recipient].append(f"{username}: {message}")
 
+                    print(message_dict[recipient].append(f"{username}: {message}"))
+
             elif message == '2':  # client requests incoming messages
                 incoming_messages = message_dict[username]
                 connection.send(str.encode(str(len(list(incoming_messages)))))  # send number of messages
+
+                print(connection.send(str.encode(str(len(list(incoming_messages))))))
+                print(str.encode('~'.join(list(incoming_messages))))
+
                 time.sleep(0.5)
                 connection.send(str.encode('~'.join(list(incoming_messages))))
                 for message in message_dict[username]:
                     message_dict_archiv[username].append(message)
                 message_dict[username] = []
 
+                print(connection.send(str.encode('~'.join(list(incoming_messages)))))
+                print(str.encode('~'.join(list(incoming_messages))))
+
             elif message == '3':
-                connection.send(str.encode('~'.join(list(message_dict.keys()))))
+                if len(message_dict.keys()) == 1:
+                    connection.send(str.encode(f" {username},you're the only online user!"))
+                else:
+                    connection.send(str.encode('~'.join(list(message_dict.keys()))))
+                    print('~'.join(list(message_dict.keys())))
+                    print(connection.send(str.encode('~'.join(list(message_dict.keys())))))
+                    print(str.encode('~'.join(list(message_dict.keys()))))
 
             elif message == '4':
-                old_messages = message_dict_archiv[username]
-                if old_messages != []:
-                    connection.send(str.encode('~'.join(list(old_messages))))
+                connection.close()
 
             elif "stop" in message.lower():
                 print(f"Closing connection to {address[0]}:{address[1]}")
@@ -99,9 +114,6 @@ if __name__ == "__main__":
     server_socket.listen()
 
 
-    # Hier müssen wir die Counter noch reduzieren wenn eine Connection geschlossen wird!
-    # Die Deregistrierung muss vielleicht auch hier vorgenommen werden.
-    # Thread schließen oder so :D
 
     print("===== Start Chat Server =====")
     print(f"Starting Server on {get_my_ip()}:{PORT}")

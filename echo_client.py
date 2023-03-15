@@ -1,9 +1,13 @@
+import time
+from idlelib.rpc import response_queue
 from pickle import TRUE
 import socket
 import sys
+import queue
+import threading
 
 client_socket = socket.socket()
-LOCALHOST = '10.11.21.85'
+LOCALHOST = '192.168.178.104'
 PORT = 4242
 
 try:
@@ -21,75 +25,114 @@ except socket.error as e:
               "Then you may try 127.0.1.1 for connecting to server")
     sys.exit(1)
 
-# Ask for connection
-response = client_socket.recv(2048)
-print(f"{response.decode()}")
+try:
+    def received_messages():
+        while receiving:
+            try:
+                response_queue.put(client_socket.recv(2048).decode())
 
-# Wait for registration confirmation
-while True:
-    response = client_socket.recv(2048)
-    print(f"{response.decode()}")
-    username = input("Username: ")
-    client_socket.send(str.encode(username))
-    response = client_socket.recv(2048)
-    if response.decode().startswith('ERROR'):
-        print(f"{response.decode()}")
-        continue
-    else:
-        print(f"{response.decode()}")
-        break
+            except:
+                # Bei Verbindungsproblemen beenden
+                client_socket.close()
+                break
 
-# Do the talk
-while True:
-    print("====== Minimal Chat System ======")
-    print("1: Send message")
-    print("2: Check incoming messages")
-    print("3: List online clients")
-    print("4: Quit")
-    msg = input("Your Selection: ")
 
-    if not msg:  # empty message not permitted in TCP
-        continue
-    client_socket.send(str.encode(msg))
-    if "stop" in msg.lower():  # protocol: "stop" to close connection.
-        break
+    # Ask for connection
+    response = client_socket.recv(2048).decode()
+    response_queue.put(response)
+    print(f"{response}")
 
-    elif msg == "1":
-        recipient = input("Send message to: ")
-        message = input("Your message: ")
-        client_socket.send(str.encode(f"{recipient} {message}"))
-
-    elif msg == "2":
-        print("Checking incoming Messages...")
-        print("Your messages:")
-        client_socket.send(str.encode(msg))
-        num_messages = client_socket.recv(2048).decode()
-        print(f"You have {num_messages} new message(s).")
-        incomming_messages = client_socket.recv(2048).decode()
-        for message in incomming_messages.split("~"):
-            print(str(message))
-
-    elif msg == "3":
-        print("Checking list of online clients...")
-        print("Online Clients:")
-        client_socket.send(str.encode(msg))
-        online_clients = client_socket.recv(2048).decode()
-        for clients in online_clients.split("~"):
-            print(str(clients))
-
-    elif msg == "4":
-        print("Checking old Messages...")
-        print("Old messages:")
-        old_messages = client_socket.recv(2048).decode()
-        for message in old_messages.split("~"):
-            print(str(message))
-
-    else:
-        print("Listening ...")
-        # Echo from Server
+    # Wait for registration confirmation
+    while True:
         response = client_socket.recv(2048).decode()
-        print(response)
+        print(f"{response}")
+        username = input("Username: ")
+        client_socket.send(str.encode(username))
+        response = client_socket.recv(2048).decode()
+        if response.startswith('ERROR'):
+            print(f"{response}")
+            continue
+        else:
+            print(f"{response}")
+            break
 
-print("Closing connection")
+    response_queue = queue.Queue()
+    receiving = True
+    receive_thread = threading.Thread(target=received_messages)
+    receive_thread.start()
 
-client_socket.close()
+    # Do the talk
+    while True:
+        time.sleep(0.1)
+        print("====== Minimal Chat System ======")
+        print("1: Send message")
+        print("2: Check incoming messages")
+        print("3: List online clients")
+        print("4: Quit")
+        msg = input("Your Selection: ")
+
+        if not msg:  # empty message not permitted in TCP
+            continue
+        client_socket.send(str.encode(msg))
+        if "stop" in msg.lower():  # protocol: "stop" to close connection.
+            break
+
+        elif msg == "1":
+            recipient = input("Send message to: ")
+            message = input("Your message: ")
+            if len(message) > 126:
+                print("The input of recipient exceeds the maximum length of 126!")
+                continue
+            client_socket.send(str.encode(f"{recipient} {message}"))
+
+        elif msg == "2":
+            print("Checking incoming Messages...")
+            print("Your messages:")
+            #client_socket.send(str.encode(msg))
+            unique_messages = set()
+            num_messages = response_queue.get()
+            print(f"You have {num_messages} new message(s).")
+            incomming_messages = response_queue.get().split("~")
+            if incomming_messages == ['0']:
+                continue
+            else:
+                for message in incomming_messages:
+                    print(str(message))
+
+        elif msg == "3":
+            print("Checking list of online clients...")
+            print("Online Clients:")
+            client_socket.send(str.encode(msg))
+            unique_messages = set()
+            messages = response_queue.get()
+            response_queue.get()
+            for clients in messages.split("~"):
+                print(clients)
+
+        elif msg == "4":
+            print("Checking old Messages...")
+            client_socket.send(str.encode('2'))
+            unique_messages = set()
+            num_messages = response_queue.get()
+            print(f"{num_messages} Old messages:")
+            incomming_messages = response_queue.get().split("~")
+            for message in incomming_messages:
+                print(str(message))
+            print("Closing down Session actor")
+            print("Goodbye")
+            time.sleep(4.0)
+            client_socket.send(str.encode(msg))
+            receiving = False
+            receive_thread.join()
+            client_socket.close()
+            break
+
+        else:
+            print("Listening ...")
+
+
+    print("Closing connection")
+
+except KeyboardInterrupt as ki:
+    print("\nStopping server due to user request")
+
