@@ -7,14 +7,23 @@ import queue
 import threading
 
 client_socket = socket.socket()
-LOCALHOST = '10.11.21.58' #10.11.21.58 #192.168.178.104
+LOCALHOST = '192.168.178.104' #10.11.21.58 #192.168.178.104
 PORT = 4242
 
 try:
-    host = sys.argv[1]  # server IP given on command line
+    while True:
+        request = input(f"Wollen Sie ein spezielle IP eingeben? Ja/Nein \nEingabe:").lower()
+        if request == "ja":
+            LOCALHOST = input("Enter Server-IP:")
+            host = sys.argv[1]
+
+        elif request == "nein":
+            host = sys.argv[1]  # server IP given on command line
+        else:
+            print("Bitte geben Sie nur 'Ja' oder 'Nein' ein.")
 except IndexError:
     host = LOCALHOST
-    print(f"No server given on command line. Trying {host}")
+    #print(f"No server given on command line. Trying {host}")
 try:
     print(f"Waiting for connection to {host}")
     client_socket.connect((host, PORT))

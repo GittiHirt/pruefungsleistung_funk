@@ -77,7 +77,7 @@ def threaded_client(connection, address):
                 else:
                     connection.send(str.encode("No new messages"))
                 message_dict[username] = []
-                time.sleep(4.0)
+                time.sleep(2.0)
                 connection.close()
                 print(f"Closing connection to {address[0]}:{address[1]}")
                 del message_dict[username]
