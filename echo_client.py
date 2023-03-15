@@ -7,7 +7,7 @@ import queue
 import threading
 
 client_socket = socket.socket()
-LOCALHOST = '192.168.178.104'
+LOCALHOST = '10.11.21.58' #10.11.21.58 #192.168.178.104
 PORT = 4242
 
 try:
@@ -90,14 +90,14 @@ try:
             print("Your messages:")
             #client_socket.send(str.encode(msg))
             unique_messages = set()
-            num_messages = response_queue.get()
-            print(f"You have {num_messages} new message(s).")
-            incomming_messages = response_queue.get().split("~")
-            if incomming_messages == ['0']:
-                continue
-            else:
-                for message in incomming_messages:
+            incomming_messages = response_queue.get()
+            if incomming_messages != ['']:
+                for message in incomming_messages.split("~"):
                     print(str(message))
+            else:
+                print("Test")
+                continue
+
 
         elif msg == "3":
             print("Checking list of online clients...")
@@ -111,13 +111,14 @@ try:
 
         elif msg == "4":
             print("Checking old Messages...")
-            client_socket.send(str.encode('2'))
             unique_messages = set()
-            num_messages = response_queue.get()
-            print(f"{num_messages} Old messages:")
-            incomming_messages = response_queue.get().split("~")
-            for message in incomming_messages:
-                print(str(message))
+            incomming_messages = response_queue.get()
+            if incomming_messages != ['']:
+                for message in incomming_messages.split("~"):
+                    print(str(message))
+            else:
+                print("Test")
+                continue
             print("Closing down Session actor")
             print("Goodbye")
             time.sleep(4.0)

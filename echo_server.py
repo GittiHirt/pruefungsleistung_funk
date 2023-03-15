@@ -8,7 +8,6 @@ from unittest import expectedFailure
 
 PORT = 4242
 message_dict = {}
-message_dict_archiv = {}
 
 
 def get_my_ip():
@@ -32,7 +31,6 @@ def threaded_client(connection, address):
             continue
         break
     message_dict[username] = []
-    message_dict_archiv[username] = []
     message = data.decode()
     print(f"{username} at {address[0]}:{address[1]}")
 
@@ -56,19 +54,12 @@ def threaded_client(connection, address):
 
             elif message == '2':  # client requests incoming messages
                 incoming_messages = message_dict[username]
-                connection.send(str.encode(str(len(list(incoming_messages)))))  # send number of messages
-
-                print((str(len(list(incoming_messages)))))
-                print(str.encode('~'.join(list(incoming_messages))))
-
-                time.sleep(0.5)
-                connection.send(str.encode('~'.join(list(incoming_messages))))
-                for message in message_dict[username]:
-                    message_dict_archiv[username].append(message)
+                if incoming_messages != []:
+                    connection.send(str.encode('~'.join(list(incoming_messages))))
+                    print((str.encode('~'.join(list(incoming_messages)))))
+                else:
+                    connection.send(str.encode("No new messages"))
                 message_dict[username] = []
-
-                print((str.encode('~'.join(list(incoming_messages)))))
-                print(str.encode('~'.join(list(incoming_messages))))
 
             elif message == '3':
                 if len(message_dict.keys()) == 1:
@@ -77,10 +68,20 @@ def threaded_client(connection, address):
                     connection.send(str.encode('~'.join(list(message_dict.keys()))))
                     print('~'.join(list(message_dict.keys())))
                     print(str.encode('~'.join(list(message_dict.keys()))))
-                    print(str.encode('~'.join(list(message_dict.keys()))))
 
             elif message == '4':
+                incoming_messages = message_dict[username]
+                if incoming_messages != []:
+                    connection.send(str.encode('~'.join(list(incoming_messages))))
+                    print((str.encode('~'.join(list(incoming_messages)))))
+                else:
+                    connection.send(str.encode("No new messages"))
+                message_dict[username] = []
+                time.sleep(4.0)
                 connection.close()
+                print(f"Closing connection to {address[0]}:{address[1]}")
+                del message_dict[username]
+                break
 
             elif "stop" in message.lower():
                 print(f"Closing connection to {address[0]}:{address[1]}")
