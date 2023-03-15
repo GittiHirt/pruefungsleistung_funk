@@ -52,13 +52,13 @@ def threaded_client(connection, address):
                 if recipient in message_dict:
                     message_dict[recipient].append(f"{username}: {message}")
 
-                    print(message_dict[recipient].append(f"{username}: {message}"))
+                    print((f"{username}: {message}"))
 
             elif message == '2':  # client requests incoming messages
                 incoming_messages = message_dict[username]
                 connection.send(str.encode(str(len(list(incoming_messages)))))  # send number of messages
 
-                print(connection.send(str.encode(str(len(list(incoming_messages))))))
+                print((str(len(list(incoming_messages)))))
                 print(str.encode('~'.join(list(incoming_messages))))
 
                 time.sleep(0.5)
@@ -67,7 +67,7 @@ def threaded_client(connection, address):
                     message_dict_archiv[username].append(message)
                 message_dict[username] = []
 
-                print(connection.send(str.encode('~'.join(list(incoming_messages)))))
+                print((str.encode('~'.join(list(incoming_messages)))))
                 print(str.encode('~'.join(list(incoming_messages))))
 
             elif message == '3':
@@ -76,7 +76,7 @@ def threaded_client(connection, address):
                 else:
                     connection.send(str.encode('~'.join(list(message_dict.keys()))))
                     print('~'.join(list(message_dict.keys())))
-                    print(connection.send(str.encode('~'.join(list(message_dict.keys())))))
+                    print(str.encode('~'.join(list(message_dict.keys()))))
                     print(str.encode('~'.join(list(message_dict.keys()))))
 
             elif message == '4':
