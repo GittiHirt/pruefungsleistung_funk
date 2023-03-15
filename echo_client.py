@@ -26,7 +26,12 @@ except IndexError:
     #print(f"No server given on command line. Trying {host}")
 try:
     print(f"Warte auf Verbindung mit dem Host: {host}")
-    client_socket.connect((host, PORT))
+    try:
+        client_socket.connect((host, PORT))
+    except TimeoutError:
+        print("Server nicht erreichbar.")
+        sys.exit(1)
+
 except socket.error as e:
     print(str(e))
     if host == LOCALHOST:
@@ -139,10 +144,15 @@ try:
 
         else:
             print("Falsche Eingabe")
+            continue
 
 
     print("Verbindung beendet!")
 
 except KeyboardInterrupt as ki:
     print("\nAnhalten des Servers durch Benutzereingabe!")
+    client_socket.close()
+except TimeoutError:
+    print("Server nicht erreichbar.")
+    client_socket.close()
 

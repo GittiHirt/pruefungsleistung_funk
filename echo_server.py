@@ -24,11 +24,11 @@ def get_my_ip():
 def threaded_client(connection, address):
     try:
         while True:
-            connection.send(str.encode("Please send username"))
+            connection.send(str.encode("Bitte senden Sie Ihren Benutzername"))
             data = connection.recv(2048)
             username = data.decode()
             if username in list(message_dict.keys()):
-                connection.send(str.encode(f"ERROR: The username '{username}' is already used!"))
+                connection.send(str.encode(f"ERROR: Der Benutzername '{username}' ist bereits vergeben!"))
                 continue
             break
         message_dict[username] = []
@@ -36,7 +36,7 @@ def threaded_client(connection, address):
         print(f"{username} at {address[0]}:{address[1]}")
 
         # Send registration confirmation
-        connection.send(str.encode(f"Registered as {username} successfully!"))
+        connection.send(str.encode(f"Registriert als {username} erfolgreich!"))
 
         while True:
             print(f"Listening for {address[0]}:{address[1]} ...")
@@ -49,7 +49,6 @@ def threaded_client(connection, address):
                 # Add message to recipient's message list
                 if recipient in message_dict:
                     message_dict[recipient].append(f"{username}: {message}")
-
                     print((f"{username}: {message}"))
 
             elif message == '2':  # client requests incoming messages
@@ -58,12 +57,12 @@ def threaded_client(connection, address):
                     connection.send(str.encode('~'.join(list(incoming_messages))))
                     print((str.encode('~'.join(list(incoming_messages)))))
                 else:
-                    connection.send(str.encode("No new messages"))
+                    connection.send(str.encode("Keine neuen Nachrichten"))
                 message_dict[username] = []
 
             elif message == '3':
                 if len(message_dict.keys()) == 1:
-                    connection.send(str.encode(f" {username},you're the only online user!"))
+                    connection.send(str.encode(f" {username},du bist der einzige Online-Benutzer!"))
                 else:
                     connection.send(str.encode('~'.join(list(message_dict.keys()))))
                     print('~'.join(list(message_dict.keys())))
@@ -75,7 +74,7 @@ def threaded_client(connection, address):
                     connection.send(str.encode('~'.join(list(incoming_messages))))
                     print((str.encode('~'.join(list(incoming_messages)))))
                 else:
-                    connection.send(str.encode("No new messages"))
+                    connection.send(str.encode("Keine neuen Nachrichten"))
                 message_dict[username] = []
                 time.sleep(2.0)
                 connection.close()
@@ -86,15 +85,15 @@ def threaded_client(connection, address):
             elif "stop" in message.lower():
                 print(f"Closing connection to {address[0]}:{address[1]}")
                 del message_dict[username]
-
                 break
 
-            else:  # assume it's a regular message
-                print('Wrong Input from Client')
+
     except WindowsError as e:
         if e.winerror == 10054:
-            print(f"Closing connection to {address[0]}:{address[1]}")
-            del message_dict[username]
+            try:
+                del message_dict[username]
+            finally:
+                print(f"Closing connection to {address[0]}:{address[1]}")
 
 
 if __name__ == "__main__":
@@ -125,7 +124,7 @@ if __name__ == "__main__":
             try:
                 # print("Ready for a new connection ...\n")
                 conn, addr = server_socket.accept()
-                msg = f"New connection: {addr[0]}:{addr[1]}"
+                msg = f"Neue Verbindung: {addr[0]}:{addr[1]}"
                 print(msg)
                 conn.send(msg.encode())
                 Thread(target=threaded_client, args=(conn, addr), daemon=True).start()
